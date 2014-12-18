@@ -58,23 +58,7 @@ class ApplicationController < ActionController::Base
           for their wedding on #{ event_date }.
           View all of the items from their registries in one beautiful list."
 
-        gon.ENV = gon_env
-        gon.couple_info = {
-            username1: "#{couple['Registrant1FirstName']} #{couple['Registrant1LastName']}",
-            username2: ("#{couple['Registrant2FirstName']} #{couple['Registrant2LastName']}" unless couple['Registrant2FirstName'].nil? and couple['Registrant2LastName'].nil?),
-            eventdate: event_date,
-            coupleid: couple['Id'],
-            location: location,
-            coupleregistries: couple['CoupleRegistries']
-        }
-        gon.charity = Api::RegistryApi.fix_charity_url couple['User']['UserCharity']
-        gon.personal_websites = couple['PersonalWebsites'].nil? ? [] : couple['PersonalWebsites'].select { |web| [994,950].include? web['AffiliateId']}
-        gon.isHiddenProducts = couple['IsHiddenProducts']
-        gon.profileURL = {
-            shortUrl: couple['UniversalRegistry'].nil? ? '' : couple['UniversalRegistry']['ShortUrl'],
-            universalRegistryId: couple['UniversalRegistry'].nil? ? '' : couple['UniversalRegistry']['Id'],
-            longUrl: couple['UniversalRegistryLongUrl']
-        }
+        set_gon_for_guest(couple, event_date, location)
 
         render layout: false
       rescue
@@ -169,5 +153,25 @@ class ApplicationController < ActionController::Base
 
   def redirect_to_hub
     redirect_to ''
+  end
+
+  def set_gon_for_guest(couple, event_date, location)
+    gon.ENV = gon_env
+    gon.couple_info = {
+        username1: "#{couple['Registrant1FirstName']} #{couple['Registrant1LastName']}",
+        username2: ("#{couple['Registrant2FirstName']} #{couple['Registrant2LastName']}" unless couple['Registrant2FirstName'].nil? and couple['Registrant2LastName'].nil?),
+        eventdate: event_date,
+        coupleid: couple['Id'],
+        location: location,
+        coupleregistries: couple['CoupleRegistries']
+    }
+    gon.charity = Api::RegistryApi.fix_charity_url couple['User']['UserCharity']
+    gon.personal_websites = couple['PersonalWebsites'].nil? ? [] : couple['PersonalWebsites'].select { |web| [994,950].include? web['AffiliateId']}
+    gon.isHiddenProducts = couple['IsHiddenProducts']
+    gon.profileURL = {
+        shortUrl: couple['UniversalRegistry'].nil? ? '' : couple['UniversalRegistry']['ShortUrl'],
+        universalRegistryId: couple['UniversalRegistry'].nil? ? '' : couple['UniversalRegistry']['Id'],
+        longUrl: couple['UniversalRegistryLongUrl']
+    }
   end
 end
