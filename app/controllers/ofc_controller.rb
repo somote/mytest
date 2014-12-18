@@ -6,11 +6,10 @@ class Api::OfcController < ApiController
 
   def create
     begin
+      init
       render_fail('Params is invalid') and return if invalid
       clear_token(params['UserId'], params['RetailerId']) if params['Retry'].nil?
-      service = Api::OfcRetailerServiceProvider.get_service(params['RetailerId'])
-      render_fail('UnKnow Retailer') and return if service.nil?
-      token = get_token(params['Code'], params['UserId'], params['RetailerId'], service)
+      token = try_get_token()
       render_fail('Authorization code is invalid') and return if token.nil?
       r = retailer_registry(token)
       render json: r and return if @rid.nil?
@@ -22,10 +21,9 @@ class Api::OfcController < ApiController
 
   def create_item
     begin
-      render_fail('Params is invalid') and return if invalid_item
-      service = Api::OfcRetailerServiceProvider.get_service(params['RetailerId'])
-      render_fail('UnKnow Retailer') and return if service.nil?
-      token = get_token(params['Code'], params['UserId'], params['RetailerId'], service)
+      init
+      render_fail('Params is invalid') and return if invalid
+      token = try_get_token()
       render_fail('Authorization code is invalid') and return if token.nil?
       item = service.create_registry_item(params, token)
       render json: item
@@ -36,16 +34,24 @@ class Api::OfcController < ApiController
 
   private
 
-  def invalid
-    return false if params['UserId'].nil? or params['RetailerId'].nil?
+  def init
+    @service = Api::OfcRetailerServiceProvider.get_service(params['RetailerId'])
     @retailer_registry_request = RetailerRegistryRequest.new(params)
     @tk_registry_request = TKRegistryRequest.new(params)
+  end
+
+  def try_get_token
+    token = get_token(params['Code'], params['UserId'], params['RetailerId'])
+  end
+
+  def invalid
+    return false if params['UserId'].nil? or params['RetailerId'].nil? or @service.nil?
     retailer_registry_request.valid? and tk_registry_request.valid?
   end
 
   def retailer_registry(token)
     if params['Retry'].nil?
-      retailer_registry = service.create_retailer_registry(@retailer_registry_request, token)
+      retailer_registry = @service.create_retailer_registry(@retailer_registry_request, token)
       @rid = retailer_registry['registryId']
     else
       @rid = params['RetailerRegistryId']
@@ -70,21 +76,21 @@ class Api::OfcController < ApiController
     render json: {status: :failed, msg: msg}
   end
 
-  def get_token(code, user_id, retailer_id, service)
+  def get_token(code, user_id, retailer_id)
     token = get_token_from_cookies(user_id, retailer_id)
     return token if not token.nil? and not token == ''
 
     refresh_token = get_refresh_token_from_cookies(user_id, retailer_id)
     if not refresh_token.nil? and not refresh_token == ''
-      token = get_retailer_token(refresh_token, true, service, user_id, retailer_id)
+      token = get_retailer_token(refresh_token, true, user_id, retailer_id)
     end
     return token if not token.nil? and not token == ''
 
-    get_retailer_token(code, false, service, user_id, retailer_id)
+    get_retailer_token(code, false, user_id, retailer_id)
   end
 
-  def get_retailer_token(code, is_refresh, service, user_id, retailer_id)
-    token = is_refresh ? service.refresh_token(code) : service.get_token(code)
+  def get_retailer_token(code, is_refresh, user_id, retailer_id)
+    token = is_refresh ? @service.refresh_token(code) : @service.get_token(code)
     return nil if token.nil? or token['access_token'].nil?
 
     store_token(token['access_token'], user_id, retailer_id)
