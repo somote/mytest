@@ -16,18 +16,7 @@ class ApplicationController < ActionController::Base
     if @isLoggedIn.present?
       @userId = member_id
       response = Api::RegistryApi.get_couples_summary_by_user_id(@userId)
-      if response.present?
-        @coupleId = response["CoupleId"]
-        @coupleRegistries = {
-            registries:process_registries(response["CoupleRegistries"]),
-            registries_len:response["NumberOfCoupleRegistries"],
-            stats: {
-                total: response["NumberOfProducts"],
-                fulfilled: response["NumberOfProducts"] - response["NumberOfUnfulfilledProducts"]
-            }
-        }
-        @charity = response["UserCharity"]
-      end
+      process_response(response)
     end
   end
 
@@ -74,6 +63,23 @@ class ApplicationController < ActionController::Base
     if @isLoggedIn.present?
       @userId = member_id
       response = Api::RegistryApi.get_couples_summary_by_user_id(@userId)
+    end
+  end
+
+  private
+
+  def process_response(response)
+    if response.present?
+      @coupleId = response["CoupleId"]
+      @coupleRegistries = {
+          registries:process_registries(response["CoupleRegistries"]),
+          registries_len:response["NumberOfCoupleRegistries"],
+          stats: {
+              total: response["NumberOfProducts"],
+              fulfilled: response["NumberOfProducts"] - response["NumberOfUnfulfilledProducts"]
+          }
+      }
+      @charity = response["UserCharity"]
     end
   end
 end
