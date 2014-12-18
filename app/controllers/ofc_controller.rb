@@ -6,28 +6,15 @@ class Api::OfcController < ApiController
 
   def create
     begin
-      render_fail('Params is invalid') and return if params['UserId'].nil? or params['RetailerId'].nil?
-      retailer_registry_request = RetailerRegistryRequest.new(params)
-      tk_registry_request = TKRegistryRequest.new(params)
-      render_fail('Params is invalid') and return unless retailer_registry_request.valid? and tk_registry_request.valid?
+      render_fail('Params is invalid') and return if invalid
       clear_token(params['UserId'], params['RetailerId']) if params['Retry'].nil?
       service = Api::OfcRetailerServiceProvider.get_service(params['RetailerId'])
       render_fail('UnKnow Retailer') and return if service.nil?
       token = get_token(params['Code'], params['UserId'], params['RetailerId'], service)
       render_fail('Authorization code is invalid') and return if token.nil?
-      if params['Retry'].nil?
-        retailer_registry = service.create_retailer_registry(retailer_registry_request, token)
-        rid = retailer_registry['registryId']
-      else
-        rid = params['RetailerRegistryId']
-      end
-      render json: retailer_registry and return if rid.nil?
-      tk_registry_request.set_code rid
-      tk_registry = Api::RegistryApi.upsert_retailer_registry(params['UserId'],tk_registry_request.to_json)
-      if tk_registry.status != 200
-        render json: {status: :failed, msg: tk_registry.body, RetailerRegistryId: rid}
-      end
-      render json: JSON.parse(tk_registry.body)
+      r = retailer_registry(token)
+      render json: r and return if @rid.nil?
+      tk_registry(rid, @tk_registry_request)
     rescue Exception => e
       render_fail(e.message)
     end
@@ -48,6 +35,32 @@ class Api::OfcController < ApiController
   end
 
   private
+
+  def invalid
+    return false if params['UserId'].nil? or params['RetailerId'].nil?
+    @retailer_registry_request = RetailerRegistryRequest.new(params)
+    @tk_registry_request = TKRegistryRequest.new(params)
+    retailer_registry_request.valid? and tk_registry_request.valid?
+  end
+
+  def retailer_registry(token)
+    if params['Retry'].nil?
+      retailer_registry = service.create_retailer_registry(@retailer_registry_request, token)
+      @rid = retailer_registry['registryId']
+    else
+      @rid = params['RetailerRegistryId']
+    end
+    retailer_registry
+  end
+
+  def tk_registry(rid, tk_registry_request)
+    @tk_registry_request.set_code rid
+    tk_registry = Api::RegistryApi.upsert_retailer_registry(params['UserId'],tk_registry_request.to_json)
+    if tk_registry.status != 200
+      render json: {status: :failed, msg: tk_registry.body, RetailerRegistryId: rid}
+    end
+    render json: JSON.parse(tk_registry.body)
+  end
 
   def invalid_item
     params['UserId'].nil? or params['RetailerId'].nil? or params['sku'].nil? or params['quantity'].nil?
