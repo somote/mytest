@@ -32,26 +32,10 @@ class ApplicationController < ActionController::Base
   end
 
   def about
-    @layout_data = TheKnotLayout::Data.new({})
-    @xo_metadata = XO::Metadata::Builder.new(application_name: 'Registry')
-    @hub = true
-    @isLoggedIn = current_member
-    gon.ENV = gon_env
-
     if @isLoggedIn.present?
-      @userId = member_id
-      response = Api::RegistryApi.get_couples_summary_by_user_id(@userId)
+      @userId = 1
       if response.present?
-        @coupleId = response["CoupleId"]
-        @coupleRegistries = {
-            registries:process_registries(response["CoupleRegistries"]),
-            registries_len:response["NumberOfCoupleRegistries"],
-            stats: {
-                total: response["NumberOfProducts"],
-                fulfilled: response["NumberOfProducts"] - response["NumberOfUnfulfilledProducts"]
-            }
-        }
-        @charity = response["UserCharity"]
+        @charity = 2
       end
     end
   end
