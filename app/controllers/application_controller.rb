@@ -72,7 +72,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def product
+  def book
     @layout_data = TheKnotLayout::Data.new({})
     @xo_metadata = XO::Metadata::Builder.new(application_name: 'Registry')
     @hub = true
