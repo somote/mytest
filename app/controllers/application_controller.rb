@@ -36,6 +36,14 @@ class ApplicationController < ActionController::Base
       @userId = 1
       if response.present?
         @charity = 2
+        @coupleRegistries = {
+            registries:process_registries(1),
+            registries_len:2,
+            stats: {
+                total: 3,
+                fulfilled: 4
+            }
+        }
       end
     end
   end
