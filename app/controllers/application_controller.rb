@@ -49,15 +49,12 @@ class ApplicationController < ActionController::Base
 
       begin
         couple = JSON.parse(couple.body)
-        couple_name = ApplicationHelper.get_couple_name couple
-        event_date = Date.parse(couple['EventDate']).strftime('%B %d, %Y')
-        location = get_location couple
-        retailer_names = ApplicationHelper.get_retailer_names couple['CoupleRegistries']
+        couple_params = parse_couple_params(couple)
 
         @title = couple_name << ' - Wedding Registry'
-        @description = ApplicationHelper.parse_guest_description(couple, event_date, location, retailer_names)
+        @description = ApplicationHelper.parse_guest_description(couple, couple_params)
 
-        set_gon_for_guest(couple, event_date, location)
+        set_gon_for_guest(couple, couple_params)
 
         render layout: false
       rescue
@@ -110,23 +107,13 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def get_location(couple)
-    if /usa?/i.match couple['Country']
-      location = "#{couple['City']}, #{couple['State']}"
-    else
-      location = "#{couple['City']}, #{couple['CountryFullName']}"
-    end
-
-    /^[\s,]+$/.match(location) ? '' : location.gsub(/^,\s|,\s$/, '')
-  end
-
   def redirect_to_hub
     redirect_to ''
   end
 
-  def set_gon_for_guest(couple, event_date, location)
+  def set_gon_for_guest(couple, couple_params)
     gon.ENV = ApplicationHelper.gon_env
-    gon.couple_info = parse_couple_info(couple, event_date, location)
+    gon.couple_info = parse_couple_info(couple_params)
     gon.charity = Api::RegistryApi.fix_charity_url couple['User']['UserCharity']
     gon.personal_websites = couple['PersonalWebsites'].nil? ? [] : couple['PersonalWebsites'].select { |web| [994,950].include? web['AffiliateId']}
     gon.isHiddenProducts = couple['IsHiddenProducts']
