@@ -7,10 +7,15 @@ class ApplicationController < ActionController::Base
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
 
+  INDEX_TITLE = 'Wedding Registry & Bridal Registries - The Knot'
+  INDEX_DESCRIPTION = 'Get tips and trends in wedding registries. Find the top shops to set up your wedding registry and more. Browse through different bridal registries and set up a registry today.'
+  MANAGE_TITLE = 'Wedding Gift Registry'
+  MANAGE_DESCRIPTION = 'example meta description'
+
   def index
     @layout_data = TheKnotLayout::Data.new({
-                                               title: 'Wedding Registry & Bridal Registries - The Knot',
-                                               description: 'Get tips and trends in wedding registries. Find the top shops to set up your wedding registry and more. Browse through different bridal registries and set up a registry today.'
+                                               title: INDEX_TITLE,
+                                               description: INDEX_DESCRIPTION
                                            })
     @xo_metadata = XO::Metadata::Builder.new(application_name: 'Registry')
     @hub = true
@@ -35,7 +40,7 @@ class ApplicationController < ActionController::Base
       gon.retailers = JSON.parse retailers.body
     end
 
-    @layout_data = TheKnotLayout::Data.new(title: 'Wedding Gift Registry', description: 'example meta description')
+    @layout_data = TheKnotLayout::Data.new(title: MANAGE_TITLE, description: MANAGE_DESCRIPTION)
     @leaderboard_ad_hidden = true
   end
 
@@ -153,7 +158,31 @@ class ApplicationController < ActionController::Base
   end
 
   def set_gon_for_guest(couple, event_date, location)
+    gon.ENV = gon_env
+    gon.couple_info = parse_couple_info(couple, event_date, location)
+    gon.charity = Api::RegistryApi.fix_charity_url couple['User']['UserCharity']
+    gon.personal_websites = couple['PersonalWebsites'].nil? ? [] : couple['PersonalWebsites'].select { |web| [994,950].include? web['AffiliateId']}
+    gon.isHiddenProducts = couple['IsHiddenProducts']
+    gon.profileURL = parse_profile_url(couple)
+  end
 
+  def parse_couple_info(couple, event_date, location)
+    {
+        username1: "#{couple['Registrant1FirstName']} #{couple['Registrant1LastName']}",
+        username2: ("#{couple['Registrant2FirstName']} #{couple['Registrant2LastName']}" unless couple['Registrant2FirstName'].nil? and couple['Registrant2LastName'].nil?),
+        eventdate: event_date,
+        coupleid: couple['Id'],
+        location: location,
+        coupleregistries: couple['CoupleRegistries']
+    }
+  end
+
+  def parse_profile_url(couple)
+    {
+        shortUrl: couple['UniversalRegistry'].nil? ? '' : couple['UniversalRegistry']['ShortUrl'],
+        universalRegistryId: couple['UniversalRegistry'].nil? ? '' : couple['UniversalRegistry']['Id'],
+        longUrl: couple['UniversalRegistryLongUrl']
+    }
   end
 
   def parse_guest_description(couple, event_date, location, retailer_names)
