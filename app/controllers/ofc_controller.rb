@@ -84,17 +84,22 @@ class Api::OfcController < ApiController
   end
 
   def get_token
-    code, user_id, retailer_id, service = params['Code'], params['UserId'], params['RetailerId']
+    code, user_id, retailer_id = params['Code'], params['UserId'], params['RetailerId']
     token = get_token_from_cookies(user_id, retailer_id)
-    return token if not token.nil? and not token == ''
-
-    refresh_token = get_refresh_token_from_cookies(user_id, retailer_id)
-    if not refresh_token.nil? and not refresh_token == ''
-      token = get_retailer_token(refresh_token, true, user_id, retailer_id)
+    if nil_or_empty? token
+      refresh_token = get_refresh_token_from_cookies(user_id, retailer_id)
+      code = refresh_token if refresh? refresh_token
+      token = get_retailer_token(code, refresh?(refresh_token), user_id, retailer_id)
     end
-    return token if not token.nil? and not token == ''
+    token
+  end
 
-    get_retailer_token(code, false, user_id, retailer_id)
+  def nil_or_empty?(v)
+    v.nil? or v == ''
+  end
+
+  def refresh?(refresh_token)
+    !nil_or_empty?(refresh_token)
   end
 
   def get_retailer_token(code, is_refresh, user_id, retailer_id)
