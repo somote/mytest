@@ -53,10 +53,7 @@ class ApplicationController < ActionController::Base
         retailer_names = get_retailer_names couple['CoupleRegistries']
 
         @title = couple_name << ' - Wedding Registry'
-        @description = "#{couple['Registrant1FirstName']}#{couple['Registrant2FirstName'].present? ? ' and ' + couple['Registrant2FirstName'] : ''}
-          from #{ location } have registered at #{retailer_names}
-          for their wedding on #{ event_date }.
-          View all of the items from their registries in one beautiful list."
+        @description = parse_guest_description(couple, event_date, location, retailer_names)
 
         set_gon_for_guest(couple, event_date, location)
 
@@ -156,6 +153,13 @@ class ApplicationController < ActionController::Base
   end
 
   def set_gon_for_guest(couple, event_date, location)
-    
+
+  end
+
+  def parse_guest_description(couple, event_date, location, retailer_names)
+    "#{couple['Registrant1FirstName']}#{couple['Registrant2FirstName'].present? ? ' and ' + couple['Registrant2FirstName'] : ''}
+          from #{ location } have registered at #{retailer_names}
+          for their wedding on #{ event_date }.
+          View all of the items from their registries in one beautiful list."
   end
 end
