@@ -49,10 +49,10 @@ class ApplicationController < ActionController::Base
 
       begin
         couple = JSON.parse(couple.body)
-        couple_name = get_couple_name couple
+        couple_name = ApplicationHelper::Couple.get_couple_name couple
 
         @title = couple_name << ' - Wedding Registry'
-        @description = get_couple_description(couple)
+        @description = ApplicationHelper::Couple.get_couple_description couple
 
         set_gon_env(couple)
 
@@ -91,11 +91,11 @@ class ApplicationController < ActionController::Base
 
   def set_gon_env(couple)
     gon.ENV = gon_env
-    gon.couple_info = get_couple_info(couple)
+    gon.couple_info = ApplicationHelper::Couple.get_couple_info(couple)
     gon.charity = Api::RegistryApi.fix_charity_url couple['User']['UserCharity']
     gon.personal_websites = couple['PersonalWebsites'].nil? ? [] : couple['PersonalWebsites'].select { |web| [994,950].include? web['AffiliateId']}
     gon.isHiddenProducts = couple['IsHiddenProducts']
-    gon.profileURL = get_profile_url(couple)
+    gon.profileURL = ApplicationHelper::Couple.get_profile_url(couple)
   end
 
   def process_couples_response(response)
@@ -124,74 +124,6 @@ class ApplicationController < ActionController::Base
         registry["LogoImageUrl"]=proxy + URI.escape(registry["LogoImageUrl"], Regexp.new("[^#{URI::PATTERN::UNRESERVED}]"))
       }
     end
-  end
-
-  def get_retailer_names(registries)
-    retailer_names = Array.new(registries).delete_if {|registry| registry['Retailer'].nil?}
-    retailer_names = retailer_names.map {|registry| registry['Retailer']['Name']}
-    parse_retailer_names(retailer_names)
-  end
-
-  def parse_retailer_names(retailer_names)
-    if retailer_names.length < 2
-      retailer_names.to_s
-    else
-      retailer_names.take(retailer_names.count - 1).join(', ') << ' and ' << retailer_names.at(retailer_names.count - 1)
-    end
-  end
-
-  def get_couple_name(couple, conn = '&')
-    space = ' '
-    first = couple['Registrant1FirstName'] + space + couple['Registrant1LastName']
-    second = couple['Registrant2FirstName'] +
-        (couple['Registrant2LastName'].present? ? space + couple['Registrant2LastName'] : '')
-
-    first << (second.present? ? (space + conn + space + second) : '')
-  end
-
-  def get_couple_info(couple)
-    event_date, location, = couple_params(couple)
-    {
-        username1: "#{couple['Registrant1FirstName']} #{couple['Registrant1LastName']}",
-        username2: ("#{couple['Registrant2FirstName']} #{couple['Registrant2LastName']}" unless couple['Registrant2FirstName'].nil? and couple['Registrant2LastName'].nil?),
-        eventdate: event_date,
-        coupleid: couple['Id'],
-        location: location,
-        coupleregistries: couple['CoupleRegistries']
-    }
-  end
-
-  def get_profile_url(couple)
-    {
-        shortUrl: couple['UniversalRegistry'].nil? ? '' : couple['UniversalRegistry']['ShortUrl'],
-        universalRegistryId: couple['UniversalRegistry'].nil? ? '' : couple['UniversalRegistry']['Id'],
-        longUrl: couple['UniversalRegistryLongUrl']
-    }
-  end
-
-  def get_location(couple)
-    if /usa?/i.match couple['Country']
-      location = "#{couple['City']}, #{couple['State']}"
-    else
-      location = "#{couple['City']}, #{couple['CountryFullName']}"
-    end
-
-    /^[\s,]+$/.match(location) ? '' : location.gsub(/^,\s|,\s$/, '')
-  end
-
-  def get_couple_description(couple)
-    event_date, location, retailer_names = couple_params(couple)
-    "#{couple['Registrant1FirstName']}#{couple['Registrant2FirstName'].present? ? ' and ' + couple['Registrant2FirstName'] : ''}
-          from #{ location } have registered at #{retailer_names}
-          for their wedding on #{ event_date }.
-          View all of the items from their registries in one beautiful list."
-  end
-
-  def couple_params(couple)
-    event_date = Date.parse(couple['EventDate']).strftime('%B %d, %Y')
-    location = get_location couple
-    retailer_names = get_retailer_names couple['CoupleRegistries']
-    [event_date, location, retailer_names]
   end
 
   def redirect_to_hub
