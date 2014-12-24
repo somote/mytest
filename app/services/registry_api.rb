@@ -5,8 +5,7 @@ class Api::RegistryApi < ApiWrapper
   def self.get_couple_info(user_id, current_member = false)
     response = services_conn(Settings.webapi_root_url).get("couples/users/?userId=#{user_id}&eventtype=1")
     begin
-      response_body = response.body
-      response_body = JSON.parse(response_body)
+      response_body = JSON.parse(response.body)
 
       if response_body['Id']
         charity = response_body['User']['UserCharity']
