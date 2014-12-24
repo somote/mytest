@@ -13,6 +13,8 @@ class ApplicationController < ActionController::Base
   MANAGE_DESCRIPTION = 'example meta description'
 
   def index
+    redirect_to_with_mlp
+
     @layout_data = TheKnotLayout::Data.new(title: INDEX_TITLE, description: INDEX_DESCRIPTION)
     @xo_metadata = XO::Metadata::Builder.new(application_name: 'Registry')
     @hub = true
@@ -27,6 +29,8 @@ class ApplicationController < ActionController::Base
   end
 
   def manage
+    redirect_to_with_mlp
+
     gon.ENV = gon_env
     gon.shortenPrefix= Settings.webui_shorten_root_url
     # render page as bvr
@@ -128,5 +132,17 @@ class ApplicationController < ActionController::Base
 
   def redirect_to_hub
     redirect_to ''
+  end
+
+  def redirect_to_with_mlp
+    if Rails.env.production? and params[:mlp] != '2hvtkh8m6y'
+      fullpath = request.fullpath.to_s
+      connector = fullpath =~ /\?/ ? '&' : '?'
+
+      redirect_to fullpath << connector << 'mlp=2hvtkh8m6y'
+      false
+    else
+      true
+    end
   end
 end
