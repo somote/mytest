@@ -10,7 +10,7 @@ module ApplicationHelper
     end
 
     def self.get_couple_info(couple)
-      event_date, location, = couple_params(couple)
+      event_date, location = couple_params(couple)
 
       {
           username1: "#{couple['Registrant1FirstName']} #{couple['Registrant1LastName']}",
@@ -41,7 +41,8 @@ module ApplicationHelper
     end
 
     def self.get_couple_description(couple)
-      event_date, location, retailer_names = couple_params(couple)
+      event_date, location = couple_params(couple)
+      retailer_names = ApplicationHelper::Retailer.get_retailer_names couple['CoupleRegistries']
       "#{couple['Registrant1FirstName']}#{couple['Registrant2FirstName'].present? ? ' and ' + couple['Registrant2FirstName'] : ''}
           from #{ location } have registered at #{retailer_names}
           for their wedding on #{ event_date }.
@@ -51,8 +52,7 @@ module ApplicationHelper
     def self.couple_params(couple)
       event_date = Date.parse(couple['EventDate']).strftime('%B %d, %Y')
       location = get_location couple
-      retailer_names = ApplicationHelper::Retailer.get_retailer_names couple['CoupleRegistries']
-      [event_date, location, retailer_names]
+      [event_date, location]
     end
   end
 
