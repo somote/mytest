@@ -12,8 +12,18 @@ class Api::RegistryApi < ApiWrapper
         charity = response_body['User']['UserCharity']
 
         info = {
-            couple_info: ApplicationHelper::Couple.get_couple_info(response_body),
-            profileURL: ApplicationHelper::Couple.get_profile_url(response_body),
+            couple_info: {
+                username1: "#{response_body["Registrant1FirstName"]} #{response_body["Registrant1LastName"]}",
+                username2: ("#{response_body["Registrant2FirstName"]} #{response_body["Registrant2LastName"]}" unless response_body["Registrant2FirstName"].nil? and response_body["Registrant2LastName"].nil?),
+                eventdate: (Date.parse(response_body["EventDate"]).strftime("%B %d, %Y") unless response_body["EventDate"].nil?),
+                coupleid: "#{response_body["Id"]}",
+                coupleregistries: response_body["CoupleRegistries"]
+            },
+            profileURL: {
+                shortUrl: response_body['UniversalRegistry'].nil? ? '' : response_body['UniversalRegistry']['ShortUrl'],
+                universalRegistryId: response_body['UniversalRegistry'].nil? ? '' : response_body['UniversalRegistry']['Id'],
+                longUrl: response_body['UniversalRegistryLongUrl']
+            },
             charity: fix_charity_url(charity),
             personal_websites: response_body["PersonalWebsites"],
             isHiddenProducts: response_body["IsHiddenProducts"],
@@ -146,7 +156,7 @@ class Api::RegistryApi < ApiWrapper
   def self.raw_request(url)
     url = Settings.legacy_webui_proxyapi_url.to_s + url + "&dbg=true"
     response_body = nil
-    open(url) do |http|
+    open(url, 'Cookie' => ($request_cookies || '')) do |http|
       response_body = http.read
     end
     response_body

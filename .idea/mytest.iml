@@ -135,6 +135,7 @@
     <orderEntry type="library" scope="PROVIDED" name="coffee-rails (v4.0.1, RVM: ruby-2.1.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="coffee-script (v2.3.0, RVM: ruby-2.1.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="coffee-script-source (v1.8.0, RVM: ruby-2.1.2) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="diff-lcs (v1.2.5, RVM: ruby-2.1.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="erubis (v2.7.0, RVM: ruby-2.1.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="execjs (v2.2.2, RVM: ruby-2.1.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="hike (v1.2.3, RVM: ruby-2.1.2) [gem]" level="application" />
@@ -150,9 +151,15 @@
     <orderEntry type="library" scope="PROVIDED" name="rails (v4.1.5, RVM: ruby-2.1.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="railties (v4.1.5, RVM: ruby-2.1.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rake (v10.4.2, RVM: ruby-2.1.2) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="rspec-core (v3.0.4, RVM: ruby-2.1.2) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="rspec-expectations (v3.0.4, RVM: ruby-2.1.2) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="rspec-mocks (v3.0.4, RVM: ruby-2.1.2) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="rspec-rails (v3.0.2, RVM: ruby-2.1.2) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="rspec-support (v3.0.4, RVM: ruby-2.1.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sass (v3.2.19, RVM: ruby-2.1.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sass-rails (v4.0.5, RVM: ruby-2.1.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sdoc (v0.4.1, RVM: ruby-2.1.2) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="simplecov-html (v0.8.0, RVM: ruby-2.1.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="spring (v1.2.0, RVM: ruby-2.1.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sprockets (v2.12.3, RVM: ruby-2.1.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sprockets-rails (v2.2.2, RVM: ruby-2.1.2) [gem]" level="application" />
