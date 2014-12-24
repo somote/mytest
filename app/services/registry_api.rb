@@ -10,14 +10,7 @@ class Api::RegistryApi < ApiWrapper
       if response_body['Id']
         charity = response_body['User']['UserCharity']
 
-        info = {
-            couple_info: ApplicationHelper::Couple.get_couple_info(response_body),
-            profileURL: ApplicationHelper::Couple.get_profile_url(response_body),
-            charity: fix_charity_url(charity),
-            personal_websites: response_body["PersonalWebsites"],
-            isHiddenProducts: response_body["IsHiddenProducts"],
-            universal: response_body["UniversalRegistry"]
-        }
+        info = get_info(response_body)
         unless current_member.equal?(false)
           info['member'] = current_member
         end
@@ -194,6 +187,19 @@ class Api::RegistryApi < ApiWrapper
 #      req.params['eventDateFilterKeys'] = event_date_filter_keys
 #    end
 #  end
+
+  private
+
+  def self.get_info(response_body)
+    {
+        couple_info: ApplicationHelper::Couple.get_couple_info(response_body),
+        profileURL: ApplicationHelper::Couple.get_profile_url(response_body),
+        charity: fix_charity_url(charity),
+        personal_websites: response_body["PersonalWebsites"],
+        isHiddenProducts: response_body["IsHiddenProducts"],
+        universal: response_body["UniversalRegistry"]
+    }
+  end
 
 end
 
